@@ -41,7 +41,8 @@ model.load_state_dict(torch.load(model_path))
 model.eval()
 
 # Define a dictionary to map class indices to class labels
-class_labels = {idx: folder_name for idx, folder_name in enumerate(os.listdir(root_dir))}
+class_labels = {idx: folder_name for idx,
+                folder_name in enumerate(os.listdir(root_dir))}
 
 # Define a label for unrecognized faces
 unknown_label = "Unknown"
@@ -50,7 +51,8 @@ unknown_label = "Unknown"
 video_capture = cv2.VideoCapture(0)
 
 # Define the face detection classifier (e.g., Haar cascade or deep learning-based face detector)
-face_cascade = cv2.CascadeClassifier(r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project\haarcascade_frontalface_default.xml')
+face_cascade = cv2.CascadeClassifier(
+    r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project\haarcascade_frontalface_default.xml')
 
 # Set the device for inference (CPU or GPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -62,7 +64,8 @@ while True:
     # Capture frame-by-frame from the video feed
     ret, frame = video_capture.read()
 
-    faces = face_cascade.detectMultiScale(frame, scaleFactor=1.2, minNeighbors=7, minSize=(100, 100))
+    faces = face_cascade.detectMultiScale(
+        frame, scaleFactor=1.1, minNeighbors=4, minSize=(100, 100))
 
     # Iterate over detected faces
     for (x, y, w, h) in faces:
@@ -91,20 +94,24 @@ while True:
             # Get the predicted class label and confidence scores
             _, predicted_idx = torch.max(outputs, 1)
             predicted_label = class_labels[predicted_idx.item()]
-            confidence_score = torch.softmax(outputs, dim=1)[0, predicted_idx].item()
+            confidence_score = torch.softmax(outputs, dim=1)[
+                0, predicted_idx].item()
 
             # Check if the confidence score is above the threshold
             if confidence_score >= confidence_threshold:
                 # Draw bounding box and label on the frame for recognized face
-                label_text = f"{predicted_label}: {confidence_score:.2f}"  # Include confidence score in label
+                # Include confidence score in label
+                label_text = f"{predicted_label}: {confidence_score:.2f}"
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                cv2.putText(frame, label_text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+                cv2.putText(frame, label_text, (x, y - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
             else:
                 # Draw bounding box and label on the frame for unknown face
-                label_text = f"Unknown: {confidence_score:.2f}"  # Include confidence score in label
+                # Include confidence score in label
+                label_text = f"Unknown: {confidence_score:.2f}"
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
-                cv2.putText(frame, label_text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
-
+                cv2.putText(frame, label_text, (x, y - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
 
     # Display the resulting frame
     cv2.imshow('Live Video', frame)
