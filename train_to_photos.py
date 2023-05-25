@@ -15,10 +15,12 @@ class FaceRecognitionModel(nn.Module):
     def __init__(self, num_classes):
         super(FaceRecognitionModel, self).__init__()
         # Load the pre-trained ResNet50 model
+
+        # weights=ResNet50_Weights.IMAGENET1K_V2
         self.base_model = resnet50(weights=None)
         # Replace the last fully connected layer (classifier) for face recognition
         self.base_model.fc = nn.Linear(2048, num_classes)
-    
+
     def forward(self, x):
         features = self.base_model(x)
         return features
@@ -78,7 +80,8 @@ validation_percentage = 0.2
 num_validation_samples = int(validation_percentage * len(dataset))
 
 # Randomly split the dataset into training and validation sets
-train_dataset, val_dataset = torch.utils.data.random_split(dataset, [len(dataset) - num_validation_samples, num_validation_samples])
+train_dataset, val_dataset = torch.utils.data.random_split(
+    dataset, [len(dataset) - num_validation_samples, num_validation_samples])
 
 # Specify the batch size for training and validation data loaders
 batch_size = 8
@@ -115,62 +118,61 @@ num_epochs = 3
 for epoch in range(num_epochs):
     # Set the model to training mode
     model.train()
-    
+
     # Iterate over the training dataset
     for images, labels in train_loader:
         # Move the data to the device
         images = images.to(device)
         labels = labels.to(device)
-        
+
         # Clear the gradients
         optimizer.zero_grad()
-        
+
         # Forward pass
         outputs = model(images)
-        
+
         # Calculate the loss
         loss = criterion(outputs, labels)
-        
+
         # Backward pass
         loss.backward()
-        
+
         # Update the model's parameters
         optimizer.step()
-    
+
     # Print the loss for this epoch
     print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}")
-    
+
     # Validation
     # Set the model to evaluation mode
     model.eval()
-    
+
     # Disable gradient calculation
     with torch.no_grad():
         total_correct = 0
         total_samples = 0
-        
+
         # Iterate over the validation dataset
         for images, labels in val_loader:
             # Move the data to the device
             images = images.to(device)
             labels = labels.to(device)
-            
+
             # Forward pass
             outputs = model(images)
-            
+
             # Get the predicted labels
             _, predicted = torch.max(outputs, 1)
-            
+
             # Calculate the number of correct predictions
             total_correct += (predicted == labels).sum().item()
             total_samples += labels.size(0)
-        
+
         # Calculate the accuracy
         accuracy = total_correct / total_samples
-        
+
         # Print the validation accuracy for this epoch
         print(f"Validation Accuracy: {accuracy:.2f}")
-
 
 
 # Specify the path to save the trained model
