@@ -5,13 +5,16 @@ from torchvision.transforms import ToTensor
 import cv2
 import torch.nn as nn
 from torchvision import transforms
-
+from torchvision.models import ResNet50_Weights
 
 # Define the face recognition model
+
+
 class FaceRecognitionModel(nn.Module):
     def __init__(self, num_classes):
         super(FaceRecognitionModel, self).__init__()
         # Load the pre-trained ResNet50 model
+        # weights=ResNet50_Weights.IMAGENET1K_V2
         self.base_model = resnet50(weights=None)
         # Replace the last fully connected layer (classifier) for face recognition
         self.base_model.fc = nn.Linear(2048, num_classes)
@@ -65,7 +68,7 @@ while True:
     ret, frame = video_capture.read()
 
     faces = face_cascade.detectMultiScale(
-        frame, scaleFactor=1.1, minNeighbors=4, minSize=(100, 100))
+        frame, scaleFactor=1.1, minNeighbors=4, minSize=(220, 220))
 
     # Iterate over detected faces
     for (x, y, w, h) in faces:
