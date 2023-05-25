@@ -5,12 +5,12 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision.transforms import ToTensor
 import torch.nn as nn
 import torch.optim as optim
-from torchvision.models import resnet50
 from torchvision import transforms
 from torchvision.models import resnet50, ResNet50_Weights
 
-
 # Define the face recognition model
+
+
 class FaceRecognitionModel(nn.Module):
     def __init__(self, num_classes):
         super(FaceRecognitionModel, self).__init__()
@@ -22,6 +22,12 @@ class FaceRecognitionModel(nn.Module):
             if name in ['layer1', 'layer2', 'layer3']:
                 for param in module.parameters():
                     param.requires_grad = False
+
+        # Reinitialize layer4 and fc with random weights
+        # nn.init.xavier_uniform_(self.base_model.layer4.weight)
+        # nn.init.zeros_(self.base_model.layer4.bias)
+        # nn.init.xavier_uniform_(self.base_model.fc.weight)
+        # nn.init.zeros_(self.base_model.fc.bias)
 
         # Replace the last fully connected layer (classifier) for face recognition
         self.base_model.fc = nn.Linear(2048, num_classes)
@@ -89,7 +95,7 @@ train_dataset, val_dataset = torch.utils.data.random_split(
     dataset, [len(dataset) - num_validation_samples, num_validation_samples])
 
 # Specify the batch size for training and validation data loaders
-batch_size = 16
+batch_size = 64
 
 # Create data loaders for training and validation
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -108,7 +114,7 @@ model = FaceRecognitionModel(num_classes=len(dataset.classes))
 
 # Define the loss function and optimizer
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.1)
+optimizer = optim.Adam(model.parameters(), lr=0.01)
 
 # Set the device for training (CPU or GPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

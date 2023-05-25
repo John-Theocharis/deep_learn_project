@@ -25,7 +25,7 @@ for user_id in range(1, num_users + 1):
             frame, scaleFactor=1.2, minNeighbors=7, minSize=(100, 100))
         for (x, y, w, h) in faces:
             # Crop the image to the face region
-            face_img = frame[y:y+h, x:x+w]
+            # face_img = frame[y:y+h, x:x+w]
             # cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
             # # Save the cropped face image
             # cv2.imwrite("{}/{}_{}_color.jpg".format(user_dir, user_name, count), face_img)
