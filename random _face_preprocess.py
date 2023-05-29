@@ -2,10 +2,10 @@ import cv2
 import os
 
 # Set the path to the directory containing the random face images
-random_faces_dir = r"C:\Users\User\Desktop\deep_learn_project\deep_learn_project\photos\JohnT"
+random_faces_dir = r"C:\Users\User\Desktop\deep_learn_project\XarhsA"
 
 # Create a new directory to store the preprocessed random face images
-preprocessed_dir = r"C:\Users\User\Desktop\deep_learn_project\deep_learn_project\photos\preprocessed_JohnT"
+preprocessed_dir = r"C:\Users\User\Desktop\deep_learn_project\deep_learn_project\photos\preprocessed_XarhsA"
 if not os.path.exists(preprocessed_dir):
     os.makedirs(preprocessed_dir)
 
@@ -24,7 +24,7 @@ for filename in os.listdir(random_faces_dir):
 
         # Perform face detection
         faces = face_cascade.detectMultiScale(
-            gray_image, scaleFactor=1.2, minNeighbors=5)
+            gray_image, scaleFactor=1.1, minNeighbors=1, minSize=(224, 224))
 
         # Crop and preprocess each detected face
         for (x, y, w, h) in faces:

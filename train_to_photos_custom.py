@@ -2,13 +2,14 @@ import os
 import cv2
 import torch
 from torch.utils.data import Dataset, DataLoader
-from torchvision.transforms import ToTensor
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import transforms
-from torchvision.models import resnet50, ResNet50_Weights
 from sklearn.metrics import f1_score
 import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+import numpy as np
 
 
 class CustomModel(nn.Module):
@@ -113,8 +114,9 @@ num_validation_samples = int(validation_percentage * len(dataset))
 train_dataset, val_dataset = torch.utils.data.random_split(
     dataset, [len(dataset) - num_validation_samples, num_validation_samples])
 
+
 # Specify the batch size for training and validation data loaders
-batch_size = 32
+batch_size = 120
 
 # Create data loaders for training and validation
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -153,9 +155,13 @@ val_losses = []
 train_f1_scores = []
 val_f1_scores = []
 
-# Initialize list to trore training and validatoin accuracies
+# Initialize list to store training and validation accuracies
 train_accuracies = []
 val_accuracies = []
+
+# Initialize lists to store predicted labels and true labels
+predicted_labels = []
+true_labels = []
 
 # Training loop
 for epoch in range(num_epochs):
@@ -235,10 +241,15 @@ for epoch in range(num_epochs):
             val_loss += loss.item() * images.size(0)
 
             # Calculate the F1 score
-            _, predicted = torch.max(outputs, 1)
-            val_f1 += f1_score(labels.cpu(), predicted.cpu(), average='macro')
+            _, predicted_val = torch.max(outputs, 1)
+            val_f1 += f1_score(labels.cpu(),
+                               predicted_val.cpu(), average='macro')
             total_val_samples += labels.size(0)
-            total_val_correct += (predicted == labels).sum().item()
+            total_val_correct += (predicted_val == labels).sum().item()
+
+            # Store the predicted labels and true labels for validation
+            predicted_labels.extend(predicted_val.cpu().numpy())
+            true_labels.extend(labels.cpu().numpy())
 
         # Calculate the average validation loss, F1 score, and accuracy for the epoch
         val_loss /= len(val_dataset)
@@ -249,10 +260,34 @@ for epoch in range(num_epochs):
         val_losses.append(val_loss)
         val_f1_scores.append(val_f1)
         val_accuracies.append(val_accuracy)
+
         # Print the validation loss, F1 score, and accuracy for this epoch
         print(
             f"Epoch [{epoch+1}/{num_epochs}], Validation Loss: {val_loss:.4f}, Validation F1 Score: {val_f1:.4f}, Validation Accuracy: {val_accuracy:.2%}")
 
+# Convert the predicted labels and true labels to NumPy arrays
+predicted_labels = np.array(predicted_labels)
+true_labels = np.array(true_labels)
+
+# Print the confusion matrix for training data
+train_cm = confusion_matrix(true_labels, predicted_labels)
+print("Confusion Matrix (Training):")
+print(train_cm)
+
+# Calculate the overall accuracy for training data
+train_overall_accuracy = accuracy_score(true_labels, predicted_labels)
+print(f"Overall Accuracy (Training): {train_overall_accuracy:.2%}")
+
+# Print the confusion matrix for validation data
+val_cm = confusion_matrix(true_labels, predicted_labels)
+print("Confusion Matrix (Validation):")
+print(val_cm)
+
+# Calculate the overall accuracy for validation data
+val_overall_accuracy = accuracy_score(true_labels, predicted_labels)
+print(f"Overall Accuracy (Validation): {val_overall_accuracy:.2%}")
+# [True Negatives (TN), False Positives (FP)]
+#  [False Negatives (FN), True Positives (TP)]]
 
 # Specify the path to save the trained model
 model_dir_dict = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project'
@@ -263,13 +298,13 @@ model_path_dict = os.path.join(model_dir_dict, model_filename)
 torch.save(model.state_dict(), model_path_dict)
 
 
-# Specify the path to save the trained model
-model_dir = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project'
-model_filename = "face_recognition_custom_model.pt"
-model_path = os.path.join(model_dir, model_filename)
+# # Specify the path to save the trained model
+# model_dir = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project'
+# model_filename = "face_recognition_custom_model.pt"
+# model_path = os.path.join(model_dir, model_filename)
 
-# Save the entire model
-torch.save(model, model_path)
+# # Save the entire model
+# torch.save(model, model_path)
 
 
 # Create a figure with two subplots
