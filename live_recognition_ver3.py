@@ -68,7 +68,7 @@ while True:
     ret, frame = video_capture.read()
 
     faces = face_cascade.detectMultiScale(
-        frame, scaleFactor=1.1, minNeighbors=4, minSize=(220, 220))
+        frame, scaleFactor=1.1, minNeighbors=4, minSize=(224, 224))
 
     # Iterate over detected faces
     for (x, y, w, h) in faces:

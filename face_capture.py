@@ -19,7 +19,7 @@ for user_id in range(1, num_users + 1):
 
     # Capture several images of the user's face
     count = 0
-    while count < 400:
+    while count < 1000:
         ret, frame = cap.read()
         faces = face_cascade.detectMultiScale(
             frame, scaleFactor=1.2, minNeighbors=7, minSize=(100, 100))
