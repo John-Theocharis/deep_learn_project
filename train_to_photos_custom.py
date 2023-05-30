@@ -5,11 +5,11 @@ from torch.utils.data import Dataset, DataLoader
 import torch.nn as nn
 import torch.optim as optim
 from torchvision import transforms
-from sklearn.metrics import f1_score
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 import numpy as np
+from sklearn.metrics import f1_score, accuracy_score, classification_report, multilabel_confusion_matrix
 
 
 class CustomModel(nn.Module):
@@ -116,7 +116,7 @@ train_dataset, val_dataset = torch.utils.data.random_split(
 
 
 # Specify the batch size for training and validation data loaders
-batch_size = 120
+batch_size = 32
 
 # Create data loaders for training and validation
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -137,7 +137,7 @@ model = FaceRecognitionModel(num_classes=len(dataset.classes))
 criterion = nn.CrossEntropyLoss()
 # optimizer = optim.Adam(model.parameters(), lr=0.001,
 #                        weight_decay=0.001, betas=(0.9, 0.999), eps=1e-8)
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.01)
 # Set the device for training (CPU or GPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -145,7 +145,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
 
 # Define the number of training epochs
-num_epochs = 5
+num_epochs = 10
 
 # Initialize lists to store training and validation losses
 train_losses = []
@@ -158,6 +158,17 @@ val_f1_scores = []
 # Initialize list to store training and validation accuracies
 train_accuracies = []
 val_accuracies = []
+
+# Initialize lists to store true positives, true negatives, false positives, and false negatives
+train_tp = []
+train_tn = []
+train_fp = []
+train_fn = []
+
+val_tp = []
+val_tn = []
+val_fp = []
+val_fn = []
 
 # Initialize lists to store predicted labels and true labels
 predicted_labels = []
@@ -196,15 +207,27 @@ for epoch in range(num_epochs):
         # Update the model's parameters
         optimizer.step()
 
-        # Calculate the F1 score
+        # Calculate the true positives, true negatives, false positives, and false negatives
         _, predicted = torch.max(outputs, 1)
-        train_f1 += f1_score(labels.cpu(), predicted.cpu(), average='macro')
+        tp = ((predicted == labels) & (predicted == 1)).sum().item()
+        tn = ((predicted == labels) & (predicted == 0)).sum().item()
+        fp = ((predicted != labels) & (predicted == 1)).sum().item()
+        fn = ((predicted != labels) & (predicted == 0)).sum().item()
+
+        train_tp.append(tp)
+        train_tn.append(tn)
+        train_fp.append(fp)
+        train_fn.append(fn)
+
+        # Calculate the F1 score
+        train_f1 += 2 * tp / (2 * tp + fp + fn)
+
         total_train_samples += labels.size(0)
         total_train_correct += (predicted == labels).sum().item()
 
     # Calculate the average training loss, F1 score, and accuracy for the epoch
     train_loss /= len(train_dataset)
-    train_f1 /= total_train_samples
+    train_f1 /= len(train_loader)
     train_accuracy = total_train_correct / total_train_samples
 
     # Append the training loss, F1 score, and accuracy to the respective lists
@@ -213,8 +236,7 @@ for epoch in range(num_epochs):
     train_accuracies.append(train_accuracy)
 
     # Print the loss, F1 score, and accuracy for this epoch
-    print(
-        f"Epoch [{epoch+1}/{num_epochs}], Train Loss: {train_loss:.4f}, Train F1 Score: {train_f1:.4f}, Train Accuracy: {train_accuracy:.2%}")
+    print(f"Epoch [{epoch+1}/{num_epochs}], Train Loss: {train_loss:.4f}, Train F1 Score: {train_f1:.4f}, Train Accuracy: {train_accuracy:.2%}")
 
     # Validation
     # Set the model to evaluation mode
@@ -223,7 +245,7 @@ for epoch in range(num_epochs):
     # Disable gradient calculation
     with torch.no_grad():
         val_loss = 0.0
-        val_f1 = 0.0
+        val_f1 = 0
         total_val_samples = 0
         total_val_correct = 0
 
@@ -240,20 +262,35 @@ for epoch in range(num_epochs):
             loss = criterion(outputs, labels)
             val_loss += loss.item() * images.size(0)
 
-            # Calculate the F1 score
+            # Calculate the true positives, true negatives, false positives, and false negatives
             _, predicted_val = torch.max(outputs, 1)
-            val_f1 += f1_score(labels.cpu(),
-                               predicted_val.cpu(), average='macro')
+            tp = ((predicted_val == labels) & (
+                predicted_val == 1)).sum().item()
+            tn = ((predicted_val == labels) & (
+                predicted_val == 0)).sum().item()
+            fp = ((predicted_val != labels) & (
+                predicted_val == 1)).sum().item()
+            fn = ((predicted_val != labels) & (
+                predicted_val == 0)).sum().item()
+
+            val_tp.append(tp)
+            val_tn.append(tn)
+            val_fp.append(fp)
+            val_fn.append(fn)
+
+            # Calculate the F1 score
+            val_f1 += 2 * tp / (2 * tp + fp + fn)
+
             total_val_samples += labels.size(0)
             total_val_correct += (predicted_val == labels).sum().item()
 
             # Store the predicted labels and true labels for validation
-            predicted_labels.extend(predicted_val.cpu().numpy())
-            true_labels.extend(labels.cpu().numpy())
+            predicted_labels.extend(predicted_val.numpy())
+            true_labels.extend(labels.numpy())
 
         # Calculate the average validation loss, F1 score, and accuracy for the epoch
         val_loss /= len(val_dataset)
-        val_f1 /= total_val_samples
+        val_f1 /= len(val_loader)
         val_accuracy = total_val_correct / total_val_samples
 
         # Append the validation loss, F1 score, and accuracy to the respective lists
@@ -262,32 +299,40 @@ for epoch in range(num_epochs):
         val_accuracies.append(val_accuracy)
 
         # Print the validation loss, F1 score, and accuracy for this epoch
-        print(
-            f"Epoch [{epoch+1}/{num_epochs}], Validation Loss: {val_loss:.4f}, Validation F1 Score: {val_f1:.4f}, Validation Accuracy: {val_accuracy:.2%}")
+        print(f"Epoch [{epoch+1}/{num_epochs}], Validation Loss: {val_loss:.4f}, Validation F1 Score: {val_f1:.4f}, Validation Accuracy: {val_accuracy:.2%}")
 
 # Convert the predicted labels and true labels to NumPy arrays
 predicted_labels = np.array(predicted_labels)
 true_labels = np.array(true_labels)
 
-# Print the confusion matrix for training data
-train_cm = confusion_matrix(true_labels, predicted_labels)
+# Calculate the multilabel confusion matrix for training data
+train_mcm = multilabel_confusion_matrix(true_labels, predicted_labels)
 print("Confusion Matrix (Training):")
-print(train_cm)
+for i, mcm in enumerate(train_mcm):
+    print(f"Class {i}:")
+    print(mcm)
+    print()
 
 # Calculate the overall accuracy for training data
 train_overall_accuracy = accuracy_score(true_labels, predicted_labels)
 print(f"Overall Accuracy (Training): {train_overall_accuracy:.2%}")
 
-# Print the confusion matrix for validation data
-val_cm = confusion_matrix(true_labels, predicted_labels)
+# Calculate the multilabel confusion matrix for validation data
+val_mcm = multilabel_confusion_matrix(true_labels, predicted_labels)
 print("Confusion Matrix (Validation):")
-print(val_cm)
+for i, mcm in enumerate(val_mcm):
+    print(f"Class {i}:")
+    print(mcm)
+    print()
 
 # Calculate the overall accuracy for validation data
 val_overall_accuracy = accuracy_score(true_labels, predicted_labels)
 print(f"Overall Accuracy (Validation): {val_overall_accuracy:.2%}")
-# [True Negatives (TN), False Positives (FP)]
-#  [False Negatives (FN), True Positives (TP)]]
+
+# Calculate classification metrics
+classification_metrics = classification_report(true_labels, predicted_labels)
+print(classification_metrics)
+
 
 # Specify the path to save the trained model
 model_dir_dict = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project'
@@ -296,15 +341,6 @@ model_path_dict = os.path.join(model_dir_dict, model_filename)
 
 # Save the model's state dictionary
 torch.save(model.state_dict(), model_path_dict)
-
-
-# # Specify the path to save the trained model
-# model_dir = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project'
-# model_filename = "face_recognition_custom_model.pt"
-# model_path = os.path.join(model_dir, model_filename)
-
-# # Save the entire model
-# torch.save(model, model_path)
 
 
 # Create a figure with two subplots
