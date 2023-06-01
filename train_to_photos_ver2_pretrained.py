@@ -97,7 +97,7 @@ train_dataset, val_dataset = torch.utils.data.random_split(
     dataset, [len(dataset) - num_validation_samples, num_validation_samples])
 
 # Specify the batch size for training and validation data loaders
-batch_size = 120
+batch_size = 32
 
 # Create data loaders for training and validation
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -118,7 +118,7 @@ model = FaceRecognitionModel(num_classes=len(dataset.classes))
 criterion = nn.CrossEntropyLoss()
 # optimizer = optim.Adam(model.parameters(), lr=0.001,
 #                        weight_decay=0.001, betas=(0.9, 0.999), eps=1e-8)
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.01)
 # Set the device for training (CPU or GPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -126,7 +126,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
 
 # Define the number of training epochs
-num_epochs = 5
+num_epochs = 10
 
 # Initialize lists to store training and validation losses
 train_losses = []
@@ -239,7 +239,7 @@ for epoch in range(num_epochs):
 
 # Specify the path to save the trained model
 model_dir = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project'
-model_filename = "face_recognition_model.pt"
+model_filename = "face_recognition_model_pretrained.pt"
 model_path = os.path.join(model_dir, model_filename)
 
 # Save the model's state dictionary
