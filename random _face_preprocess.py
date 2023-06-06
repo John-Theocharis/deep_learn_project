@@ -2,10 +2,10 @@ import cv2
 import os
 
 # Set the path to the directory containing the random face images
-random_faces_dir = r"C:\Users\User\Desktop\deep_learn_project\JohnT4"
+random_faces_dir = r"C:\Users\User\Desktop\deep_learn_project\photos for training\original\Haris"
 
 # Create a new directory to store the preprocessed random face images
-preprocessed_dir = r"C:\Users\User\Desktop\deep_learn_project\deep_learn_project\photos\preprocessed_JohnT"
+preprocessed_dir = r"C:\Users\User\Desktop\deep_learn_project\deep_learn_project\photos\HarisA"
 if not os.path.exists(preprocessed_dir):
     os.makedirs(preprocessed_dir)
 
