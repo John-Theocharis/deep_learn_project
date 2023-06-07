@@ -2,10 +2,10 @@ import cv2
 import os
 
 # Set the path to the directory containing the random face images
-random_faces_dir = r"C:\Users\User\Desktop\deep_learn_project\photos for training\original\Haris"
+random_faces_dir = r"C:\Users\User\Desktop\deep_learn_project\photos for training\original\johnT"
 
 # Create a new directory to store the preprocessed random face images
-preprocessed_dir = r"C:\Users\User\Desktop\deep_learn_project\deep_learn_project\photos\HarisA"
+preprocessed_dir = r"C:\Users\User\Desktop\deep_learn_project\photos for training\original\johnT_tets"
 if not os.path.exists(preprocessed_dir):
     os.makedirs(preprocessed_dir)
 
@@ -37,8 +37,8 @@ for filename in os.listdir(random_faces_dir):
             # Normalize the pixel values to [0, 1]
             normalized_face = resized_face / 255.0
 
-            # Convert the normalized face back to the range [0, 255]
-            normalized_face *= 255.0
+            # # Convert the normalized face back to the range [0, 255]
+            # normalized_face *= 255.0
             normalized_face = normalized_face.astype("uint8")
 
             # Save the preprocessed random face image

@@ -1,4 +1,3 @@
-from sklearn.metrics import f1_score
 import os
 import cv2
 import torch
@@ -7,8 +6,6 @@ import torch.nn as nn
 import torch.optim as optim
 from torchvision import transforms
 import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score
 import numpy as np
 from sklearn.metrics import f1_score, accuracy_score, classification_report, multilabel_confusion_matrix
 
@@ -99,7 +96,7 @@ class FaceDataset(Dataset):
 torch.manual_seed(0)
 
 # Provide the path to the root directory of the dataset
-root_dir = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project\photos'
+root_dir = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project\test_folder'
 
 # Create an instance of the FaceDataset
 dataset = FaceDataset(root_dir)
@@ -146,7 +143,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
 
 # Define the number of training epochs
-num_epochs = 10
+num_epochs = 5
 
 # Import the necessary libraries
 
