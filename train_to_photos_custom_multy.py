@@ -60,7 +60,9 @@ class FaceDataset(Dataset):
         self.transform = transforms.Compose([
             transforms.ToPILImage(),
             transforms.Resize((224, 224)),
-            transforms.ToTensor()
+            transforms.ToTensor(),
+            # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
+            #                      0.229, 0.224, 0.225])
         ])
 
     def get_image_paths(self):
@@ -96,7 +98,7 @@ class FaceDataset(Dataset):
 torch.manual_seed(0)
 
 # Provide the path to the root directory of the dataset
-root_dir = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project\test_folder'
+root_dir = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project\photos'
 
 # Create an instance of the FaceDataset
 dataset = FaceDataset(root_dir)
@@ -143,7 +145,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
 
 # Define the number of training epochs
-num_epochs = 5
+num_epochs = 15
 
 # Import the necessary libraries
 
@@ -343,11 +345,15 @@ print(classification_metrics)
 # Specify the path to save the trained model
 model_dir_dict = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project'
 model_filename = "face_recognition_custom_model_dict.pt"
-model_path_dict = os.path.join(model_dir_dict, model_filename)
+full_model = "face_recognition_custom_full_model.pt"
 
+model_path_dict = os.path.join(model_dir_dict, model_filename)
+whole_model_path = os.path.join(model_dir_dict, full_model)
 # Save the model's state dictionary
 torch.save(model.state_dict(), model_path_dict)
 
+# Save the whole model
+torch.save(model, whole_model_path)
 
 # Create a figure with two subplots
 fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 12))

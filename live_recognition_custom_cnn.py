@@ -62,9 +62,6 @@ model.load_state_dict(state_dict)
 # Set the model to evaluation mode
 model.eval()
 
-# Specify the root directory of the dataset
-root_dir = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project\photos'
-
 # Define a dictionary to map class indices to class labels
 class_labels = {idx: folder_name for idx,
                 folder_name in enumerate(os.listdir(root_dir))}
@@ -93,8 +90,8 @@ while True:
             transforms.ToPILImage(),
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
-                                 0.229, 0.224, 0.225])
+            # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
+            #     0.229, 0.224, 0.225])
         ])
         preprocessed_face = transform(face).unsqueeze(0)
 
@@ -105,7 +102,7 @@ while True:
         preprocessed_face = preprocessed_face.to(device)
 
         # Set the confidence threshold
-        confidence_threshold = 0.85
+        confidence_threshold = 0.8
 
         # Perform face recognition on the preprocessed face tensor
         with torch.no_grad():
