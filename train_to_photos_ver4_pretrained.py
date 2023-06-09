@@ -80,7 +80,7 @@ num_validation_samples = int(validation_percentage * len(dataset))
 train_dataset, val_dataset = torch.utils.data.random_split(
     dataset, [len(dataset) - num_validation_samples, num_validation_samples])
 
-batch_size = 120
+batch_size = 32
 
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size)
