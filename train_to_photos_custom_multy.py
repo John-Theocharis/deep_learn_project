@@ -10,30 +10,36 @@ import numpy as np
 from sklearn.metrics import f1_score, accuracy_score, classification_report, multilabel_confusion_matrix
 
 
+import torch.nn as nn
+
+
 class CustomModel(nn.Module):
     def __init__(self, num_classes):
         super(CustomModel, self).__init__()
 
         self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1)
+        self.bn1 = nn.BatchNorm2d(16)
         self.conv2 = nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1)
+        self.bn2 = nn.BatchNorm2d(32)
         self.conv3 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+        self.bn3 = nn.BatchNorm2d(64)
         self.fc = nn.Linear(64 * 28 * 28, num_classes)
 
     def forward(self, x):
         x = self.conv1(x)
+        x = self.bn1(x)
         x = nn.ReLU()(x)
         x = nn.MaxPool2d(kernel_size=2, stride=2)(x)
 
         x = self.conv2(x)
+        x = self.bn2(x)
         x = nn.ReLU()(x)
         x = nn.MaxPool2d(kernel_size=2, stride=2)(x)
 
         x = self.conv3(x)
+        x = self.bn3(x)
         x = nn.ReLU()(x)
         x = nn.MaxPool2d(kernel_size=2, stride=2)(x)
-
-        #  inspect tensor size
-        # print(x.size())
 
         x = x.view(x.size(0), -1)
 
@@ -137,7 +143,7 @@ model = FaceRecognitionModel(num_classes=len(dataset.classes))
 criterion = nn.CrossEntropyLoss()
 # optimizer = optim.Adam(model.parameters(), lr=0.001,
 #                        weight_decay=0.001, betas=(0.9, 0.999), eps=1e-8)
-optimizer = optim.Adam(model.parameters(), lr=0.01)
+optimizer = optim.Adam(model.parameters(), lr=0.001)
 # Set the device for training (CPU or GPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -145,7 +151,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
 
 # Define the number of training epochs
-num_epochs = 15
+num_epochs = 10
 
 # Import the necessary libraries
 

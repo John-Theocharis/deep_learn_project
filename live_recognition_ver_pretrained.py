@@ -35,7 +35,7 @@ num_classes = len(os.listdir(root_dir))
 model = FaceRecognitionModel(num_classes)
 
 # Specify the path to the saved model's state dictionary
-model_path = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project\face_recognition_model_pretrained.pt'
+model_path = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project\face_recognition_model_noweights_pretrained.pt'
 
 # Load the saved model's state dictionary
 model.load_state_dict(torch.load(model_path))

@@ -20,6 +20,12 @@ class FaceRecognitionModel(nn.Module):
         self.base_model = resnet50(weights=ResNet50_Weights.IMAGENET1K_V2)
         self.base_model.fc = nn.Linear(2048, num_classes)
 
+        # freeze the first three layers
+        for name, module in self.base_model.named_children():
+            if name in ['layer1', 'layer2', 'layer3']:
+                for param in module.parameters():
+                    param.requires_grad = False
+
     def forward(self, x):
         features = self.base_model(x)
         return features
@@ -65,7 +71,7 @@ class FaceDataset(Dataset):
         return image, self.classes.index(label)
 
 
-root_dir = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project\test_folder'
+root_dir = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project\photos'
 dataset = FaceDataset(root_dir)
 
 validation_percentage = 0.2
@@ -83,7 +89,7 @@ val_loader = DataLoader(val_dataset, batch_size=batch_size)
 model = FaceRecognitionModel(num_classes=len(dataset.classes))
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.01)
+optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
@@ -166,7 +172,7 @@ for epoch in range(num_epochs):
         f"Epoch [{epoch+1}/{num_epochs}], Train Loss: {train_loss:.4f}, Train F1 Score: {train_f1:.4f}, Train Accuracy: {train_accuracy:.4f}, Val Loss: {val_loss:.4f}, Val F1 Score: {val_f1:.4f}, Val Accuracy: {val_accuracy:.4f}")
 
 model_dir = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project'
-model_filename = "face_recognition_model_pretrained.pt"
+model_filename = "face_recognition_model_V2weights_pretrained.pt"
 model_path = os.path.join(model_dir, model_filename)
 
 torch.save(model.state_dict(), model_path)
@@ -197,6 +203,6 @@ ax3.set_title('Training and Validation Accuracies')
 
 plt.subplots_adjust(hspace=0.4)
 
-plt.savefig('training_metrics_pretrained.png')
+plt.savefig('training_metrics_V2weights_pretrained.png')
 
 plt.show()
