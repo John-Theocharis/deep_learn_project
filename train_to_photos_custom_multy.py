@@ -8,9 +8,7 @@ from torchvision import transforms
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import f1_score, accuracy_score, classification_report, multilabel_confusion_matrix
-
-
-import torch.nn as nn
+import csv
 
 
 class CustomModel(nn.Module):
@@ -19,10 +17,13 @@ class CustomModel(nn.Module):
 
         self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1)
         self.bn1 = nn.BatchNorm2d(16)
+        # self.dropout1 = nn.Dropout(0.1)
         self.conv2 = nn.Conv2d(16, 32, kernel_size=3, stride=1, padding=1)
         self.bn2 = nn.BatchNorm2d(32)
+        # self.dropout2 = nn.Dropout(0.1)
         self.conv3 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
         self.bn3 = nn.BatchNorm2d(64)
+        # self.dropout3 = nn.Dropout(0.1)
         self.fc = nn.Linear(64 * 28 * 28, num_classes)
 
     def forward(self, x):
@@ -30,19 +31,21 @@ class CustomModel(nn.Module):
         x = self.bn1(x)
         x = nn.ReLU()(x)
         x = nn.MaxPool2d(kernel_size=2, stride=2)(x)
+        # x = self.dropout1(x)
 
         x = self.conv2(x)
         x = self.bn2(x)
         x = nn.ReLU()(x)
         x = nn.MaxPool2d(kernel_size=2, stride=2)(x)
+        # x = self.dropout2(x)
 
         x = self.conv3(x)
         x = self.bn3(x)
         x = nn.ReLU()(x)
         x = nn.MaxPool2d(kernel_size=2, stride=2)(x)
+        # x = self.dropout3(x)
 
         x = x.view(x.size(0), -1)
-
         x = self.fc(x)
 
         return x
@@ -66,9 +69,7 @@ class FaceDataset(Dataset):
         self.transform = transforms.Compose([
             transforms.ToPILImage(),
             transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-            # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
-            #                      0.229, 0.224, 0.225])
+            transforms.ToTensor()
         ])
 
     def get_image_paths(self):
@@ -122,7 +123,7 @@ train_dataset, val_dataset = torch.utils.data.random_split(
 
 
 # Specify the batch size for training and validation data loaders
-batch_size = 32
+batch_size = 64
 
 # Create data loaders for training and validation
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -132,18 +133,28 @@ val_loader = DataLoader(val_dataset, batch_size=batch_size)
 # Define the face recognition model
 model = FaceRecognitionModel(num_classes=len(dataset.classes))
 
-# # Access the list of classes
-# classes = dataset.classes
-
-# # Print the names of the classes
-# print(classes)
-
 
 # Define the loss function and optimizer
 criterion = nn.CrossEntropyLoss()
 # optimizer = optim.Adam(model.parameters(), lr=0.001,
 #                        weight_decay=0.001, betas=(0.9, 0.999), eps=1e-8)
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.0000001)
+
+
+# Specify the path to the saved model's state dictionary
+model_dir_dict = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project'
+model_filename = "face_recognition_custom_model_dict.pt"
+model_path_dict = os.path.join(model_dir_dict, model_filename)
+
+# Check if the model's state dictionary file exists
+if os.path.exists(model_path_dict):
+    # Load the saved model's state dictionary
+    model.load_state_dict(torch.load(model_path_dict))
+    print("Loaded pretrained model.")
+else:
+    print("Pretrained model not found. Starting from scratch.")
+
+
 # Set the device for training (CPU or GPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -168,15 +179,10 @@ train_accuracies = []
 val_accuracies = []
 
 # Initialize lists to store true positives, true negatives, false positives, and false negatives
-train_tp = []
-train_tn = []
-train_fp = []
-train_fn = []
 
-val_tp = []
-val_tn = []
-val_fp = []
-val_fn = []
+train_tp, train_tn, train_fp, train_fn = [], [], [], []
+
+val_tp, val_tn, val_fp, val_fn = [], [], [], []
 
 # Initialize lists to store true labels and predicted labels
 true_labels = []
@@ -360,6 +366,49 @@ torch.save(model.state_dict(), model_path_dict)
 
 # Save the whole model
 torch.save(model, whole_model_path)
+
+
+# Specify the file path to save the metrics
+metrics_file = "custom_metrics.csv"
+metrics_path = os.path.join(model_dir_dict, metrics_file)
+
+# Define the data to be saved as a dictionary
+data = {
+    "Train Losses": train_losses,
+    "Validation Losses": val_losses,
+    "Train F1 Scores": train_f1_scores,
+    "Validation F1 Scores": val_f1_scores,
+    "Train Accuracies": train_accuracies,
+    "Validation Accuracies": val_accuracies,
+}
+
+# Check if the metrics file exists
+file_exists = os.path.exists(metrics_path)
+
+# Read the existing data from the file
+existing_data = {}
+if file_exists:
+    with open(metrics_path, "r") as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            metric = row["Metric"]
+            values = eval(row["Values"])
+            existing_data[metric] = values
+
+# Update the existing data with new values
+for metric, values in data.items():
+    if metric in existing_data:
+        existing_data[metric].extend(values)
+    else:
+        existing_data[metric] = values
+
+# Write the updated data to the file
+with open(metrics_path, "w", newline="") as file:
+    writer = csv.DictWriter(file, fieldnames=["Metric", "Values"])
+    writer.writeheader()
+    for metric, values in existing_data.items():
+        writer.writerow({"Metric": metric, "Values": str(values)})
+
 
 # Create a figure with two subplots
 fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(8, 12))

@@ -97,8 +97,7 @@ while True:
             transforms.ToPILImage(),
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
-            # transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[
-            #     0.229, 0.224, 0.225])
+
         ])
         preprocessed_face = transform(face).unsqueeze(0)
 
@@ -109,7 +108,7 @@ while True:
         preprocessed_face = preprocessed_face.to(device)
 
         # Set the confidence threshold
-        confidence_threshold = 0.8
+        confidence_threshold = 0.5
 
         # Perform face recognition on the preprocessed face tensor
         with torch.no_grad():
