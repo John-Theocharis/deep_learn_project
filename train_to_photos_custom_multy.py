@@ -138,7 +138,7 @@ model = FaceRecognitionModel(num_classes=len(dataset.classes))
 criterion = nn.CrossEntropyLoss()
 # optimizer = optim.Adam(model.parameters(), lr=0.001,
 #                        weight_decay=0.001, betas=(0.9, 0.999), eps=1e-8)
-optimizer = optim.Adam(model.parameters(), lr=0.0000001)
+optimizer = optim.Adam(model.parameters(), lr=0.000001)
 
 
 # Specify the path to the saved model's state dictionary
@@ -162,7 +162,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
 
 # Define the number of training epochs
-num_epochs = 10
+num_epochs = 5
 
 # Import the necessary libraries
 

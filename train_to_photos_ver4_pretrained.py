@@ -80,7 +80,7 @@ num_validation_samples = int(validation_percentage * len(dataset))
 train_dataset, val_dataset = torch.utils.data.random_split(
     dataset, [len(dataset) - num_validation_samples, num_validation_samples])
 
-batch_size = 32
+batch_size = 128
 
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=batch_size)
@@ -89,12 +89,12 @@ val_loader = DataLoader(val_dataset, batch_size=batch_size)
 model = FaceRecognitionModel(num_classes=len(dataset.classes))
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=0.00001)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
-num_epochs = 5
+num_epochs = 6
 
 train_losses = []
 train_f1_scores = []

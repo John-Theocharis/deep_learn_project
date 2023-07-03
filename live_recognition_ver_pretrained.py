@@ -84,7 +84,7 @@ while True:
         # Move the face tensor to the device
         face_tensor = face_tensor.to(device)
         # Set the confidence threshold
-        confidence_threshold = 0.85
+        confidence_threshold = 0.5
 
         # Perform face recognition on the face tensor
         with torch.no_grad():

@@ -108,7 +108,7 @@ while True:
         preprocessed_face = preprocessed_face.to(device)
 
         # Set the confidence threshold
-        confidence_threshold = 0.5
+        confidence_threshold = 0.6
 
         # Perform face recognition on the preprocessed face tensor
         with torch.no_grad():
