@@ -10,7 +10,7 @@
 
 5)Train the model using train_to_photos_ver4_pretrained.py to use the resnet50 pretrained model or the train_to_photos_custom_multy.py to use out custom made CNN .
 
-6) dont forget to adjust the folder location within each .py file to correspond to your files.
+6)Dont forget to adjust the folder location within each .py file to correspond to your files.
 
    
 
