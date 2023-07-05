@@ -89,12 +89,12 @@ val_loader = DataLoader(val_dataset, batch_size=batch_size)
 model = FaceRecognitionModel(num_classes=len(dataset.classes))
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.00001)
+optimizer = optim.Adam(model.parameters(), lr=0.000001)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
-num_epochs = 6
+num_epochs = 10
 
 train_losses = []
 train_f1_scores = []
