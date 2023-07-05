@@ -13,4 +13,5 @@
 6) dont forget to adjust the folder location within each .py file to correspond to your files.
 
    
-![deep](https://github.com/John-Theocharis/deep_learn_project/assets/118253762/625f32c5-1dc3-48fc-bead-9d10f7b9468a)
+
+![test](https://github.com/John-Theocharis/deep_learn_project/assets/118253762/e9a9d2fd-ddf1-4ba7-9eb5-231b6897a208)
