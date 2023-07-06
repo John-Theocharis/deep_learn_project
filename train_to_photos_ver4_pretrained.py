@@ -17,14 +17,14 @@ class FaceRecognitionModel(nn.Module):
     def __init__(self, num_classes):
         super(FaceRecognitionModel, self).__init__()
         # weights=ResNet50_Weights.IMAGENET1K_V2
-        self.base_model = resnet50(weights=ResNet50_Weights.IMAGENET1K_V2)
+        self.base_model = resnet50(weights=None)
         self.base_model.fc = nn.Linear(2048, num_classes)
 
-        # freeze the first three layers
-        for name, module in self.base_model.named_children():
-            if name in ['layer1', 'layer2', 'layer3']:
-                for param in module.parameters():
-                    param.requires_grad = False
+        # # freeze the first three layers
+        # for name, module in self.base_model.named_children():
+        #     if name in ['layer1', 'layer2', 'layer3']:
+        #         for param in module.parameters():
+        #             param.requires_grad = False
 
     def forward(self, x):
         features = self.base_model(x)
@@ -94,7 +94,7 @@ optimizer = optim.Adam(model.parameters(), lr=0.000001)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
 
-num_epochs = 10
+num_epochs = 5
 
 train_losses = []
 train_f1_scores = []
@@ -172,7 +172,7 @@ for epoch in range(num_epochs):
         f"Epoch [{epoch+1}/{num_epochs}], Train Loss: {train_loss:.4f}, Train F1 Score: {train_f1:.4f}, Train Accuracy: {train_accuracy:.4f}, Val Loss: {val_loss:.4f}, Val F1 Score: {val_f1:.4f}, Val Accuracy: {val_accuracy:.4f}")
 
 model_dir = r'C:\Users\User\Desktop\deep_learn_project\deep_learn_project'
-model_filename = "face_recognition_model_V2weights_pretrained.pt"
+model_filename = "face_recognition_model_NO_weights_pretrained.pt"
 model_path = os.path.join(model_dir, model_filename)
 
 torch.save(model.state_dict(), model_path)
@@ -203,6 +203,6 @@ ax3.set_title('Training and Validation Accuracies')
 
 plt.subplots_adjust(hspace=0.4)
 
-plt.savefig('training_metrics_V2weights_pretrained.png')
+plt.savefig('training_metrics_NO_weights_pretrained.png')
 
 plt.show()
